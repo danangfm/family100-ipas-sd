@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Family 100 - IPAS Kelas 5 SD (Ekosistem)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #030712;
+            color: #ffffff;
+            overflow: hidden;
+        }
+        .font-fredoka {
+            font-family: 'Fredoka', cursive;
+        }
+        /* Aspect Ratio Container Strategy (16:9 1920x1080 scaled) */
+        #game-stage {
+            width: 100vw;
+            height: 56.25vw; /* 16:9 aspect ratio */
+            max-height: 100vh;
+            max-width: 177.78vh; /* 16:9 ratio */
+            margin: auto;
+            position: absolute;
+            top: 0; bottom: 0; left: 0; right: 0;
+            box-shadow: 0 0 50px rgba(234, 179, 8, 0.25);
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+        }
+        /* Neon glowing stage bulb effects */
+        .neon-border {
+            box-shadow: 0 0 15px #eab308, inset 0 0 15px #eab308;
+            border: 3px solid #fde047;
+        }
+        .neon-cyan {
+            box-shadow: 0 0 20px #06b6d4, inset 0 0 10px #06b6d4;
+        }
+        .neon-rose {
+            box-shadow: 0 0 20px #f43f5e, inset 0 0 10px #f43f5e;
+        }
+        .neon-amber {
+            box-shadow: 0 0 20px #f59e0b, inset 0 0 10px #f59e0b;
+        }
+        .neon-emerald {
+            box-shadow: 0 0 20px #10b981, inset 0 0 10px #10b981;
+        }
+
+        /* Family 100 Flip Card 3D Styling */
+        .flip-card {
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateX(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.25rem;
+            border: 2px solid #38bdf8;
+        }
+        .flip-card-front {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.2), 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        .flip-card-back {
+            background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+            transform: rotateX(180deg);
+            box-shadow: inset 0 2px 10px rgba(255, 255, 255, 0.3), 0 4px 12px rgba(2, 132, 199, 0.5);
+            border-color: #fde047;
+        }
+
+        /* Pulsing animations */
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.8)); }
+            50% { transform: scale(1.03); filter: drop-shadow(0 0 25px rgba(250, 204, 21, 1)); }
+        }
+        .pulse-gold {
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+        @keyframes strike-pop {
+            0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .strike-anim {
+            animation: strike-pop 0.3s ease-out forwards;
+        }
+
+        /* TV Stage Lights Ring */
+        .stage-light {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #fef08a;
+            box-shadow: 0 0 10px #fde047;
+            animation: blink-light 1.2s infinite alternate;
+        }
+        .stage-light:nth-child(even) {
+            animation-delay: 0.6s;
+            background-color: #38bdf8;
+            box-shadow: 0 0 10px #38bdf8;
+        }
+        @keyframes blink-light {
+            from { opacity: 0.3; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-slate-950">
+
+    <!-- MAIN 16:9 STAGE CONTAINER -->
+    <div id="game-stage" class="relative overflow-hidden flex flex-col justify-between p-3 sm:p-5 select-none">
+        
+        <!-- BGM and Fullscreen Controls (Top Right Overlay) -->
+        <div class="absolute top-3 right-4 z-50 flex items-center gap-2">
+            <button id="btn-bgm" onclick="toggleBGM()" class="bg-slate-800/90 hover:bg-slate-700 text-yellow-300 border border-yellow-500/50 px-3 py-1.5 rounded-full text-xs sm:text-sm font-black backdrop-blur flex items-center gap-2 transition shadow-lg">
+                <i class="fas fa-music text-yellow-400"></i> <span id="bgm-text">Musik Ceria: OFF</span>
+            </button>
+            <button id="btn-fullscreen" onclick="toggleFullscreen()" class="bg-slate-800/90 hover:bg-slate-700 text-cyan-300 border border-cyan-500/50 px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold backdrop-blur flex items-center gap-2 transition shadow-lg">
+                <i class="fas fa-expand"></i> <span class="hidden sm:inline">Layar Penuh</span>
+            </button>
+        </div>
+
+        <!-- ==================== SCENE 1: INTRO ANIMATION ==================== -->
+        <div id="scene-intro" class="absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-950">
+            <!-- 3D WebGL / Canvas Background for Golden Ring & Particles -->
+            <canvas id="intro-canvas" class="absolute inset-0 w-full h-full"></canvas>
+            
+            <!-- Overlay Graphics & Text -->
+            <div class="relative z-10 text-center px-4 max-w-4xl flex flex-col items-center gap-3">
+                <!-- TV Show Emblem Badge -->
+                <div class="inline-block px-5 py-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-cyan-200 text-xs sm:text-sm font-bold tracking-widest uppercase border border-cyan-400/50 shadow-lg">
+                    SDN TAMBAKREJA 05 • KELAS 5 (FASE C)
+                </div>
+
+                <!-- Main Dynamic Title Frame -->
+                <div class="relative py-5 px-8 sm:px-12 rounded-3xl bg-gradient-to-b from-indigo-950/90 to-slate-950/95 border-4 border-yellow-400/80 backdrop-blur-md shadow-[0_0_50px_rgba(234,179,8,0.4)] flex flex-col items-center">
+                    <!-- Bulbs on Title Frame -->
+                    <div class="absolute -top-2 left-6 right-6 flex justify-between">
+                        <div class="stage-light"></div><div class="stage-light"></div><div class="stage-light"></div>
+                        <div class="stage-light"></div><div class="stage-light"></div><div class="stage-light"></div>
+                    </div>
+
+                    <h2 class="text-lg sm:text-xl font-extrabold text-cyan-400 tracking-wider uppercase mb-1">MEDIA PEMBELAJARAN INTERAKTIF IPAS</h2>
+                    <h1 class="text-4xl sm:text-6xl md:text-7xl font-black font-fredoka text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-100 to-amber-400 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)] tracking-wide">
+                        KUIS FAMILY 100
+                    </h1>
+                    <div class="text-base sm:text-2xl font-bold text-yellow-300 mt-1 tracking-wider">
+                        TEMA: EKOSISTEM & RANTAI MAKANAN (4 TIM)
+                    </div>
+
+                    <div class="absolute -bottom-2 left-6 right-6 flex justify-between">
+                        <div class="stage-light"></div><div class="stage-light"></div><div class="stage-light"></div>
+                        <div class="stage-light"></div><div class="stage-light"></div><div class="stage-light"></div>
+                    </div>
+                </div>
+
+                <p class="text-slate-300 text-xs sm:text-sm max-w-xl my-1 italic">
+                    "Survei Membuktikan! Adu cepat dan adu pengetahuan 4 Tim seputar produsen, konsumen, pengurai, dan ekosistem!"
+                </p>
+
+                <!-- Start Button -->
+                <button onclick="startSetup()" class="pulse-gold mt-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 hover:from-yellow-400 hover:to-amber-300 text-slate-950 font-black text-lg sm:text-2xl tracking-wider uppercase shadow-[0_0_30px_rgba(245,158,11,0.6)] transform active:scale-95 transition border-2 border-white">
+                    <i class="fas fa-play mr-2"></i> MASUK PANGGUNG KUIS
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== SCENE 2: 4-TEAM SETUP ==================== -->
+        <div id="scene-setup" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-md p-4">
+            <div class="bg-slate-950 border-2 border-yellow-500/50 rounded-3xl p-6 sm:p-8 max-w-2xl w-full text-center shadow-2xl relative">
+                <h2 class="text-2xl sm:text-3xl font-black font-fredoka text-yellow-400 mb-1">PERSIAPAN 4 TIM KUIS</h2>
+                <p class="text-slate-300 text-xs sm:text-sm mb-5">Masukkan nama ke-4 tim yang akan bertanding di panggung survei!</p>
+
+                <div class="grid grid-cols-2 gap-4 text-left mb-6">
+                    <div>
+                        <label class="block text-cyan-300 text-xs font-bold mb-1"><i class="fas fa-shield-halved text-cyan-400 mr-1.5"></i>Tim 1</label>
+                        <input type="text" id="input-team1" value="Tim Elang" class="w-full bg-slate-800 text-white font-bold px-3 py-2 sm:py-2.5 rounded-xl border border-cyan-500/50 focus:outline-none focus:border-cyan-400 text-sm sm:text-base">
+                    </div>
+                    <div>
+                        <label class="block text-rose-300 text-xs font-bold mb-1"><i class="fas fa-shield-halved text-rose-400 mr-1.5"></i>Tim 2</label>
+                        <input type="text" id="input-team2" value="Tim Hiu" class="w-full bg-slate-800 text-white font-bold px-3 py-2 sm:py-2.5 rounded-xl border border-rose-500/50 focus:outline-none focus:border-rose-400 text-sm sm:text-base">
+                    </div>
+                    <div>
+                        <label class="block text-amber-300 text-xs font-bold mb-1"><i class="fas fa-shield-halved text-amber-400 mr-1.5"></i>Tim 3</label>
+                        <input type="text" id="input-team3" value="Tim Harimau" class="w-full bg-slate-800 text-white font-bold px-3 py-2 sm:py-2.5 rounded-xl border border-amber-500/50 focus:outline-none focus:border-amber-400 text-sm sm:text-base">
+                    </div>
+                    <div>
+                        <label class="block text-emerald-300 text-xs font-bold mb-1"><i class="fas fa-shield-halved text-emerald-400 mr-1.5"></i>Tim 4</label>
+                        <input type="text" id="input-team4" value="Tim Garuda" class="w-full bg-slate-800 text-white font-bold px-3 py-2 sm:py-2.5 rounded-xl border border-emerald-500/50 focus:outline-none focus:border-emerald-400 text-sm sm:text-base">
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-lg sm:text-xl tracking-wider uppercase shadow-lg transform active:scale-95 transition">
+                    Mulai Pertandingan (4 Tim) <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== SCENE 3: MAIN GAME SHOW BOARD ==================== -->
+        <div id="scene-game" class="hidden h-full flex flex-col justify-between">
+            
+            <!-- TOP BAR: Header Info & Active Topic -->
+            <div class="flex items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5 px-4 backdrop-blur shadow-md">
+                <div class="flex items-center gap-3">
+                    <span class="bg-yellow-500 text-slate-950 font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                        BABAK <span id="current-round-num">1</span> / 5
+                    </span>
+                    <span id="topic-title" class="text-cyan-300 text-xs sm:text-sm font-bold truncate">
+                        Topik: Jenis-jenis Ekosistem
+                    </span>
+                </div>
+                <!-- Round Score Pot -->
+                <div class="flex items-center gap-2 bg-slate-950 px-4 py-1 rounded-xl border border-yellow-500/40">
+                    <span class="text-[11px] sm:text-xs text-yellow-400 font-bold uppercase tracking-widest">POIN BABAK INI:</span>
+                    <span id="round-pot" class="text-2xl sm:text-3xl font-black text-yellow-300 font-fredoka">0</span>
+                </div>
+            </div>
+
+            <!-- MIDDLE SECTION: 4 TEAM SCOREBOARDS + MAIN BOARD -->
+            <div class="grid grid-cols-12 gap-2 sm:gap-3 my-auto items-stretch">
+                
+                <!-- LEFT COLUMN: TEAM 1 & TEAM 2 -->
+                <div class="col-span-3 sm:col-span-2 flex flex-col gap-2 justify-between">
+                    <!-- TEAM 1 SCORE CARD -->
+                    <div id="card-team1" class="bg-gradient-to-b from-cyan-950 to-slate-900 border-2 border-cyan-500/50 rounded-2xl p-2 text-center flex flex-col justify-between h-28 sm:h-36 transition-all">
+                        <div class="flex items-center justify-between gap-1">
+                            <span id="name-team1" class="font-extrabold text-xs sm:text-sm text-cyan-300 truncate text-left">Tim Elang</span>
+                            <span id="turn-badge-1" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-500 text-slate-950 uppercase hidden">Aktif</span>
+                        </div>
+                        <div class="my-auto">
+                            <div id="score-team1" class="text-2xl sm:text-3xl font-black text-white font-fredoka">0</div>
+                        </div>
+                        <button onclick="addPotToTeam(1)" class="w-full py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black text-[10px] sm:text-xs uppercase transition shadow">
+                            + Ambil Poin
+                        </button>
+                    </div>
+
+                    <!-- TEAM 2 SCORE CARD -->
+                    <div id="card-team2" class="bg-gradient-to-b from-rose-950 to-slate-900 border-2 border-rose-500/50 rounded-2xl p-2 text-center flex flex-col justify-between h-28 sm:h-36 transition-all">
+                        <div class="flex items-center justify-between gap-1">
+                            <span id="name-team2" class="font-extrabold text-xs sm:text-sm text-rose-300 truncate text-left">Tim Hiu</span>
+                            <span id="turn-badge-2" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-slate-950 uppercase hidden">Aktif</span>
+                        </div>
+                        <div class="my-auto">
+                            <div id="score-team2" class="text-2xl sm:text-3xl font-black text-white font-fredoka">0</div>
+                        </div>
+                        <button onclick="addPotToTeam(2)" class="w-full py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-slate-950 font-black text-[10px] sm:text-xs uppercase transition shadow">
+                            + Ambil Poin
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MAIN BOARD (Center Column) -->
+                <div class="col-span-6 sm:col-span-8 bg-slate-950/90 border-4 border-yellow-500/80 rounded-3xl p-3 sm:p-4 shadow-[0_0_30px_rgba(234,179,8,0.2)] flex flex-col justify-between relative">
+                    
+                    <!-- Neon lights framing the top board -->
+                    <div class="absolute -top-3 left-10 right-10 flex justify-between">
+                        <div class="stage-light"></div><div class="stage-light"></div><div class="stage-light"></div><div class="stage-light"></div>
+                    </div>
+
+                    <!-- Question Header Display -->
+                    <div class="text-center mb-2">
+                        <h3 id="question-text" class="text-sm sm:text-lg font-bold text-yellow-200 leading-snug">
+                            "Sebutkan jenis-jenis ekosistem yang ada di bumi!"
+                        </h3>
+                    </div>
+
+                    <!-- 5 Flip Answer Cards Slot Grid -->
+                    <div id="answers-container" class="space-y-1.5 sm:space-y-2 max-w-2xl mx-auto w-full">
+                        <!-- Dynamic Answer Flip Rows Generated Here -->
+                    </div>
+
+                    <!-- Host Dialogue Box -->
+                    <div class="mt-2 bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-yellow-500 text-slate-950 flex-shrink-0 flex items-center justify-center font-black text-sm">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <p id="host-speech" class="text-xs sm:text-sm text-yellow-100 italic leading-tight truncate">
+                            "Halo siswa cerdas! Mari tebak jawaban teratas dari survei 100 orang!"
+                        </p>
+                    </div>
+
+                    <div class="absolute -bottom-3 left-10 right-10 flex justify-between">
+                        <div class="stage-light"></div><div class="stage-light"></div><div class="stage-light"></div><div class="stage-light"></div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: TEAM 3 & TEAM 4 -->
+                <div class="col-span-3 sm:col-span-2 flex flex-col gap-2 justify-between">
+                    <!-- TEAM 3 SCORE CARD -->
+                    <div id="card-team3" class="bg-gradient-to-b from-amber-950 to-slate-900 border-2 border-amber-500/50 rounded-2xl p-2 text-center flex flex-col justify-between h-28 sm:h-36 transition-all">
+                        <div class="flex items-center justify-between gap-1">
+                            <span id="name-team3" class="font-extrabold text-xs sm:text-sm text-amber-300 truncate text-left">Tim Harimau</span>
+                            <span id="turn-badge-3" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 uppercase hidden">Aktif</span>
+                        </div>
+                        <div class="my-auto">
+                            <div id="score-team3" class="text-2xl sm:text-3xl font-black text-white font-fredoka">0</div>
+                        </div>
+                        <button onclick="addPotToTeam(3)" class="w-full py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[10px] sm:text-xs uppercase transition shadow">
+                            + Ambil Poin
+                        </button>
+                    </div>
+
+                    <!-- TEAM 4 SCORE CARD -->
+                    <div id="card-team4" class="bg-gradient-to-b from-emerald-950 to-slate-900 border-2 border-emerald-500/50 rounded-2xl p-2 text-center flex flex-col justify-between h-28 sm:h-36 transition-all">
+                        <div class="flex items-center justify-between gap-1">
+                            <span id="name-team4" class="font-extrabold text-xs sm:text-sm text-emerald-300 truncate text-left">Tim Garuda</span>
+                            <span id="turn-badge-4" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 uppercase hidden">Aktif</span>
+                        </div>
+                        <div class="my-auto">
+                            <div id="score-team4" class="text-2xl sm:text-3xl font-black text-white font-fredoka">0</div>
+                        </div>
+                        <button onclick="addPotToTeam(4)" class="w-full py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-[10px] sm:text-xs uppercase transition shadow">
+                            + Ambil Poin
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTTOM CONTROL DECK FOR TEACHER / GAME MASTER -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2">
+                
+                <!-- Strike Controls -->
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[11px] text-rose-400 font-extrabold uppercase mr-1 hidden sm:inline">SALAH:</span>
+                    <button onclick="triggerStrike()" class="px-2.5 py-1.5 rounded-lg bg-red-600/90 hover:bg-red-500 text-white font-extrabold text-xs shadow flex items-center gap-1 transition">
+                        <i class="fas fa-xmark text-sm"></i> JAWABAN SALAH (X)
+                    </button>
+                    <button onclick="resetStrikes()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-semibold">
+                        Reset X
+                    </button>
+                    <!-- Active Strike Display -->
+                    <div id="strike-indicators" class="flex items-center gap-1 ml-1 text-rose-500 text-lg font-black">
+                        <!-- Dynamic X icons -->
+                    </div>
+                </div>
+
+                <!-- 4-Team Turn Switcher -->
+                <div class="flex items-center gap-1 sm:gap-1.5">
+                    <span class="text-[11px] text-slate-400 font-bold hidden md:inline">GILIRAN:</span>
+                    <button id="btn-turn-1" onclick="setActiveTeam(1)" class="px-2.5 py-1 rounded-lg bg-cyan-950 border border-cyan-500 text-cyan-300 text-xs font-bold">
+                        Tim 1
+                    </button>
+                    <button id="btn-turn-2" onclick="setActiveTeam(2)" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-xs font-bold">
+                        Tim 2
+                    </button>
+                    <button id="btn-turn-3" onclick="setActiveTeam(3)" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-xs font-bold">
+                        Tim 3
+                    </button>
+                    <button id="btn-turn-4" onclick="setActiveTeam(4)" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-xs font-bold">
+                        Tim 4
+                    </button>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex items-center gap-2">
+                    <button onclick="openEducativeModal()" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
+                        <i class="fas fa-chalkboard-user"></i> Ulasan Guru
+                    </button>
+                    <button onclick="revealAllAnswers()" class="px-3 py-1.5 rounded-xl bg-amber-600/80 hover:bg-amber-500 text-slate-950 font-bold text-xs shadow transition">
+                        Buka Semua
+                    </button>
+                    <button id="btn-next-round" onclick="nextRound()" class="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow flex items-center gap-1.5 transition">
+                        Soal Berikutnya <i class="fas fa-forward"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== OVERLAY: STRIKE (BIG X) ==================== -->
+        <div id="overlay-strike" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs pointer-events-none">
+            <div id="strike-content" class="flex gap-4 sm:gap-8 text-red-600 drop-shadow-[0_0_35px_rgba(239,68,68,0.9)]">
+                <!-- X icons generated dynamically -->
+            </div>
+        </div>
+
+        <!-- ==================== MODAL: ULASAN EDUKATIF GURU ==================== -->
+        <div id="modal-educative" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
+            <div class="bg-slate-900 border-2 border-yellow-500/80 rounded-3xl p-6 max-w-2xl w-full shadow-2xl relative flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-xl">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 class="text-xl font-extrabold text-yellow-300 font-fredoka">ULASAN EDUKATIF GURU</h3>
+                    </div>
+                    <button onclick="closeEducativeModal()" class="text-slate-400 hover:text-white text-xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <h4 id="modal-topic" class="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-1">Topik</h4>
+                    <p id="modal-explanation" class="text-slate-200 text-base leading-relaxed">
+                        Penjelasan guru akan tampil di sini...
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button onclick="closeEducativeModal()" class="px-6 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black text-sm uppercase tracking-wider">
+                        Paham, Lanjutkan Kuis!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SCENE 4: 4-TEAM WINNER ANNOUNCEMENT ==================== -->
+        <div id="scene-winner" class="hidden absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-lg p-6 text-center">
+            <div class="relative max-w-3xl w-full bg-gradient-to-b from-indigo-950 to-slate-900 border-4 border-yellow-400/80 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(234,179,8,0.4)] flex flex-col items-center gap-5">
+                
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-yellow-500/20 text-yellow-300 flex items-center justify-center text-3xl sm:text-4xl border-2 border-yellow-400/50 pulse-gold">
+                    <i class="fas fa-trophy"></i>
+                </div>
+
+                <div>
+                    <h2 class="text-cyan-400 font-extrabold text-xs sm:text-sm uppercase tracking-widest mb-1">HASIL AKHIR KUIS FAMILY 100 (4 TIM)</h2>
+                    <h1 id="winner-title" class="text-3xl sm:text-5xl font-black font-fredoka text-yellow-300">
+                        TIM ELANG JUARA 1!
+                    </h1>
+                </div>
+
+                <!-- 4 Teams Score Board Comparison Grid -->
+                <div id="winner-teams-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full my-1">
+                    <!-- Dynamic Team Rank Cards -->
+                </div>
+
+                <p class="text-slate-300 text-xs sm:text-sm italic">
+                    "Selamat kepada pemenang dan seluruh peserta kelas 5 SDN TAMBAKREJA 05! Semua tim adalah penjelajah ekosistem yang luar biasa!"
+                </p>
+
+                <button onclick="restartGame()" class="px-8 py-3 rounded-2xl bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-slate-950 font-black text-base sm:text-lg tracking-wider uppercase shadow-lg transform active:scale-95 transition">
+                    <i class="fas fa-rotate-right mr-2"></i> Main Lagi
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ===================================================================
+           QUESTION DATA (IPAS SD FASE C - EKOSISTEM & RANTAI MAKANAN)
+           =================================================================== */
+        const QUIZ_DATA = [
+            {
+                id: 1,
+                topic: "Jenis-jenis Ekosistem",
+                question: "Sebutkan jenis-jenis ekosistem yang ada di bumi (baik ekosistem darat maupun perairan)!",
+                answers: [
+                    { text: "Ekosistem Hutan", points: 38, keywords: ["hutan", "forest"] },
+                    { text: "Ekosistem Laut / Perairan", points: 27, keywords: ["laut", "perairan", "samudra", "ocean"] },
+                    { text: "Ekosistem Sawah / Pertanian", points: 18, keywords: ["sawah", "pertanian", "kebun"] },
+                    { text: "Ekosistem Sungai / Danau", points: 11, keywords: ["sungai", "danau", "rawa"] },
+                    { text: "Ekosistem Padang Rumput / Gurun", points: 6, keywords: ["padang rumput", "gurun", "savana", "sabana"] }
+                ],
+                explanation: "Ekosistem terbagi menjadi dua kelompok utama, yaitu ekosistem alami (seperti hutan dan laut) serta ekosistem buatan manusia (seperti sawah dan waduk). Setiap ekosistem memiliki komponen biotik dan abiotik yang saling berinteraksi membentuk keseimbangan alam.",
+                hostSpeech: "Pikirkan alam sekitar kita! Ada ekosistem alami dan buatan di darat maupun air!"
+            },
+            {
+                id: 2,
+                topic: "Contoh Jenis-jenis Produsen pada Rantai Makanan",
+                question: "Sebutkan contoh tumbuhan atau organisme yang berperan sebagai produsen dalam rantai makanan!",
+                answers: [
+                    { text: "Padi / Rumput", points: 40, keywords: ["padi", "rumput"] },
+                    { text: "Fitoplankton / Alga", points: 25, keywords: ["fitoplankton", "alga", "ganggang"] },
+                    { text: "Pohon Buah / Sayuran", points: 16, keywords: ["pohon", "buah", "sayur", "sayuran", "tumbuhan"] },
+                    { text: "Tanaman Teratai / Eceng Gondok", points: 11, keywords: ["teratai", "eceng gondok", "tanaman air"] },
+                    { text: "Lumut", points: 8, keywords: ["lumut", "moss"] }
+                ],
+                explanation: "Produsen adalah makhluk hidup autotrof yang mampu membuat makanannya sendiri melalui proses fotosintesis dengan bantuan sinar matahari. Produsen menjadi sumber energi utama bagi seluruh konsumen di dalam rantai makanan.",
+                hostSpeech: "Siapa makhluk hidup autotrof pembuat makanan pertama di bumi? Ayo sebutkan!"
+            },
+            {
+                id: 3,
+                topic: "Contoh Jenis-jenis Konsumen pada Rantai Makanan",
+                question: "Sebutkan contoh hewan yang berperan sebagai konsumen (pemakan tumbuhan maupun daging)!",
+                answers: [
+                    { text: "Ular / Elang (Konsumen Puncak / Karnivora)", points: 36, keywords: ["ular", "elang", "karnivora", "puncak"] },
+                    { text: "Kambing / Sapi / Kelinci (Konsumen 1 / Herbivora)", points: 28, keywords: ["kambing", "sapi", "kelinci", "herbivora", "konsumen 1"] },
+                    { text: "Katak / Burung Pemakan Serangga (Konsumen 2)", points: 18, keywords: ["katak", "kodok", "burung", "pemakan serangga"] },
+                    { text: "Tikus / Ayam (Omnivora)", points: 11, keywords: ["tikus", "ayam", "omnivora"] },
+                    { text: "Harimau / Singa (Predator Utama)", points: 7, keywords: ["harimau", "singa", "predator"] }
+                ],
+                explanation: "Konsumen adalah makhluk hidup heterotrof yang tidak bisa membuat makanan sendiri sehingga harus memakan organisme lain. Tingkatan konsumen terdiri dari konsumen tingkat I (herbivora), tingkat II/III (karnivora/omnivora), hingga konsumen puncak (predator).",
+                hostSpeech: "Ada hewan pemakan rumput, ada pemakan serangga, sampai pemuncak rantai makanan!"
+            },
+            {
+                id: 4,
+                topic: "Contoh Jenis-jenis Pengurai pada Rantai Makanan",
+                question: "Sebutkan organisme atau hewan kecil yang berperan sebagai pengurai (dekomposer/detritivor) di alam!",
+                answers: [
+                    { text: "Jamur / Cendawan", points: 37, keywords: ["jamur", "cendawan", "fungi"] },
+                    { text: "Bakteri", points: 28, keywords: ["bakteri", "microbe"] },
+                    { text: "Cacing Tanah", points: 17, keywords: ["cacing", "cacing tanah"] },
+                    { text: "Kecoak / Serangga Bangkai", points: 11, keywords: ["kecoak", "kecoa", "serangga bangkai", "lalat"] },
+                    { text: "Kaki Seribu / Rayap", points: 7, keywords: ["kaki seribu", "rayap", "luwing"] }
+                ],
+                explanation: "Pengurai bertugas menguraikan bangkai makhluk hidup dan sisa materi organik menjadi zat hara (nutrisi) di dalam tanah atau air. Nutrisi ini kemudian diserap kembali oleh produsen, sehingga rantai makanan terus berputar secara alami.",
+                hostSpeech: "Siapa pahlawan kebersihan alam yang mengubah bangkai menjadi zat hara penyubur tanah?"
+            },
+            {
+                id: 5,
+                topic: "Daftar Makhluk Hidup Rantai Makanan Ekosistem Laut",
+                question: "Sebutkan makhluk hidup yang menjadi bagian dari rantai makanan di ekosistem laut!",
+                answers: [
+                    { text: "Ikan Hiu / Paus Pembunuh (Konsumen Puncak)", points: 38, keywords: ["hiu", "paus", "orca", "puncak laut"] },
+                    { text: "Ikan Kecil / Udang (Konsumen Tingkat I/II)", points: 26, keywords: ["ikan kecil", "udang", "ikan"] },
+                    { text: "Fitoplankton / Rumput Laut (Produsen)", points: 18, keywords: ["fitoplankton", "rumput laut", "alga laut"] },
+                    { text: "Zooplankton (Konsumen Tingkat I)", points: 11, keywords: ["zooplankton", "plankton"] },
+                    { text: "Bakteri Laut / Bintang Laut (Pengurai / Pemakan Bangkai)", points: 7, keywords: ["bakteri laut", "bintang laut", "pengurai laut"] }
+                ],
+                explanation: "Rantai makanan di laut diawali oleh fitoplankton sebagai produsen utama, yang dimakan oleh zooplankton dan ikan kecil. Urutan ini berlanjut hingga ke konsumen puncak seperti ikan hiu, dan diakhiri oleh pengurai di dasar laut.",
+                hostSpeech: "Selami lautan dalam! Dari plankton mikroskopis sampai raja lautan seperti Hiu!"
+            }
+        ];
+
+        /* ===================================================================
+           GAME STATE MANAGEMENT (4 TEAMS)
+           =================================================================== */
+        let gameState = {
+            currentRound: 0,
+            teams: [
+                { id: 1, name: "Tim Elang", score: 0, color: "cyan" },
+                { id: 2, name: "Tim Hiu", score: 0, color: "rose" },
+                { id: 3, name: "Tim Harimau", score: 0, color: "amber" },
+                { id: 4, name: "Tim Garuda", score: 0, color: "emerald" }
+            ],
+            roundPot: 0,
+            activeTeam: 1, // 1, 2, 3, or 4
+            strikes: 0,
+            revealedAnswers: [false, false, false, false, false],
+            bgmPlaying: false
+        };
+
+        /* ===================================================================
+           WEB AUDIO API SOUND SYNTHESIZER
+           =================================================================== */
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Sound Effect 1: Board Reveal Sound (Glissando / Chime)
+        function playFlipSound() {
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.25); // C6
+
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } catch(e){}
+        }
+
+        // Sound Effect 2: Strike Buzzer (Family 100 Signature Buzz)
+        function playBuzzerSound() {
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                
+                const osc1 = ctx.createOscillator();
+                const osc2 = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc1.type = 'sawtooth';
+                osc2.type = 'sawtooth';
+
+                osc1.frequency.setValueAtTime(130, now); // C3
+                osc2.frequency.setValueAtTime(138.59, now); // C#3
+
+                gain.gain.setValueAtTime(0.6, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.6);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 0.6);
+                osc2.stop(now + 0.6);
+            } catch(e){}
+        }
+
+        // Sound Effect 3: Point Score / Round Win Chime
+        function playScoreSound() {
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C Major Arpeggio
+
+                notes.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+
+                    gain.gain.setValueAtTime(0.35, now + idx * 0.07);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.07 + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start(now + idx * 0.07);
+                    osc.stop(now + idx * 0.07 + 0.35);
+                });
+            } catch(e){}
+        }
+
+        // Sound Effect 4: Winner Fanfare
+        function playWinnerFanfare() {
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const melody = [
+                    { f: 523.25, d: 0.15 }, { f: 659.25, d: 0.15 }, { f: 783.99, d: 0.15 },
+                    { f: 1046.50, d: 0.4 }, { f: 880.00, d: 0.2 }, { f: 1046.50, d: 0.6 }
+                ];
+                let time = now;
+                melody.forEach(note => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(note.f, time);
+                    gain.gain.setValueAtTime(0.4, time);
+                    gain.gain.exponentialRampToValueAtTime(0.01, time + note.d);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(time);
+                    osc.stop(time + note.d);
+                    time += note.d + 0.03;
+                });
+            } catch(e){}
+        }
+
+        /* HIGHLY CHEERFUL & AUDIBLE POLYPHONIC BGM SYNTHESIZER */
+        let bgmTimer = null;
+        function toggleBGM() {
+            getAudioContext();
+            gameState.bgmPlaying = !gameState.bgmPlaying;
+            const btnText = document.getElementById('bgm-text');
+            
+            if (gameState.bgmPlaying) {
+                btnText.textContent = "Musik Ceria: ON";
+                startBGMLoop();
+            } else {
+                btnText.textContent = "Musik Ceria: OFF";
+                stopBGMLoop();
+            }
+        }
+
+        function startBGMLoop() {
+            if (bgmTimer) clearInterval(bgmTimer);
+            let step = 0;
+            
+            // Bright cheerful motif melody notes (C Major Pentatonic)
+            const melodyNotes = [
+                523.25, 659.25, 783.99, 1046.50, // C5, E5, G5, C6
+                783.99, 659.25, 880.00, 1046.50, // G5, E5, A5, C6
+                659.25, 783.99, 1046.50, 1174.66, // E5, G5, C6, D6
+                1046.50, 880.00, 783.99, 659.25   // C6, A5, G5, E5
+            ];
+            
+            const bassNotes = [261.63, 329.63, 392.00, 440.00]; // C4, E4, G4, A4
+
+            bgmTimer = setInterval(() => {
+                if (!gameState.bgmPlaying) return;
+                try {
+                    const ctx = getAudioContext();
+                    const now = ctx.currentTime;
+                    
+                    // 1. Play Lead Melody Tone (Bright Triangle Wave)
+                    const oscLead = ctx.createOscillator();
+                    const gainLead = ctx.createGain();
+
+                    oscLead.type = 'triangle';
+                    oscLead.frequency.setValueAtTime(melodyNotes[step % melodyNotes.length], now);
+
+                    gainLead.gain.setValueAtTime(0.18, now); // Increased volume for audibility
+                    gainLead.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+                    oscLead.connect(gainLead);
+                    gainLead.connect(ctx.destination);
+
+                    oscLead.start(now);
+                    oscLead.stop(now + 0.22);
+
+                    // 2. Play Bouncy Bass Tone on alternate beats
+                    if (step % 2 === 0) {
+                        const oscBass = ctx.createOscillator();
+                        const gainBass = ctx.createGain();
+
+                        oscBass.type = 'sine';
+                        oscBass.frequency.setValueAtTime(bassNotes[Math.floor(step / 2) % bassNotes.length], now);
+
+                        gainBass.gain.setValueAtTime(0.15, now);
+                        gainBass.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+                        oscBass.connect(gainBass);
+                        gainBass.connect(ctx.destination);
+
+                        oscBass.start(now);
+                        oscBass.stop(now + 0.35);
+                    }
+
+                    step++;
+                } catch(e){}
+            }, 230); // Fast upbeat tempo (~130 BPM)
+        }
+
+        function stopBGMLoop() {
+            if (bgmTimer) {
+                clearInterval(bgmTimer);
+                bgmTimer = null;
+            }
+        }
+
+        /* ===================================================================
+           SCENE & GAME FLOW CONTROLLERS
+           =================================================================== */
+        function startSetup() {
+            getAudioContext();
+            document.getElementById('scene-intro').classList.add('hidden');
+            document.getElementById('scene-setup').classList.remove('hidden');
+        }
+
+        function startGame() {
+            gameState.teams[0].name = document.getElementById('input-team1').value.trim() || "Tim Elang";
+            gameState.teams[1].name = document.getElementById('input-team2').value.trim() || "Tim Hiu";
+            gameState.teams[2].name = document.getElementById('input-team3').value.trim() || "Tim Harimau";
+            gameState.teams[3].name = document.getElementById('input-team4').value.trim() || "Tim Garuda";
+
+            gameState.teams.forEach(t => t.score = 0);
+            gameState.currentRound = 0;
+
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`name-team${i}`).textContent = gameState.teams[i-1].name;
+                document.getElementById(`score-team${i}`).textContent = "0";
+            }
+
+            document.getElementById('scene-setup').classList.add('hidden');
+            document.getElementById('scene-game').classList.remove('hidden');
+
+            loadRound(0);
+        }
+
+        function loadRound(roundIndex) {
+            if (roundIndex >= QUIZ_DATA.length) {
+                showWinnerScene();
+                return;
+            }
+
+            gameState.currentRound = roundIndex;
+            gameState.roundPot = 0;
+            gameState.strikes = 0;
+            gameState.revealedAnswers = [false, false, false, false, false];
+            
+            const currentData = QUIZ_DATA[roundIndex];
+
+            // Update UI headers
+            document.getElementById('current-round-num').textContent = roundIndex + 1;
+            document.getElementById('topic-title').textContent = "Topik: " + currentData.topic;
+            document.getElementById('question-text').textContent = `"${currentData.question}"`;
+            document.getElementById('round-pot').textContent = "0";
+            document.getElementById('host-speech').textContent = `"${currentData.hostSpeech}"`;
+
+            renderAnswersBoard(currentData.answers);
+            resetStrikesUI();
+            setActiveTeam(1);
+        }
+
+        /* ===================================================================
+           MAIN ANSWER BOARD RENDERER
+           =================================================================== */
+        function renderAnswersBoard(answers) {
+            const container = document.getElementById('answers-container');
+            container.innerHTML = '';
+
+            answers.forEach((ans, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `flip-card h-11 sm:h-13 cursor-pointer`;
+                cardEl.id = `answer-card-${index}`;
+                cardEl.onclick = () => revealAnswer(index);
+
+                cardEl.innerHTML = `
+                    <div class="flip-card-inner">
+                        <!-- FRONT SIDE (HIDDEN STATE) -->
+                        <div class="flip-card-front hover:border-yellow-400 transition">
+                            <span class="font-black text-base sm:text-lg text-cyan-400 font-fredoka">${index + 1}</span>
+                            <div class="w-7 h-7 rounded-full bg-slate-800 border border-cyan-500/30 flex items-center justify-center text-cyan-300 font-bold text-xs sm:text-sm">
+                                ?
+                            </div>
+                        </div>
+                        <!-- BACK SIDE (REVEALED STATE) -->
+                        <div class="flip-card-back">
+                            <span class="font-extrabold text-xs sm:text-sm text-white text-left truncate max-w-[80%]">
+                                ${ans.text}
+                            </span>
+                            <span class="font-black text-base sm:text-lg text-yellow-300 font-fredoka bg-slate-950/60 px-2.5 py-0.5 rounded-lg border border-yellow-400/40">
+                                ${ans.points}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(cardEl);
+            });
+        }
+
+        function revealAnswer(index) {
+            if (gameState.revealedAnswers[index]) return; // Already revealed
+
+            gameState.revealedAnswers[index] = true;
+            const cardEl = document.getElementById(`answer-card-${index}`);
+            if (cardEl) {
+                cardEl.classList.add('flipped');
+            }
+
+            // Sound
+            playFlipSound();
+
+            // Add points to current pot
+            const currentData = QUIZ_DATA[gameState.currentRound];
+            const addedPoints = currentData.answers[index].points;
+            gameState.roundPot += addedPoints;
+
+            document.getElementById('round-pot').textContent = gameState.roundPot;
+
+            // Check if all answers revealed
+            if (gameState.revealedAnswers.every(val => val === true)) {
+                setTimeout(() => {
+                    playScoreSound();
+                }, 400);
+            }
+        }
+
+        function revealAllAnswers() {
+            const currentData = QUIZ_DATA[gameState.currentRound];
+            currentData.answers.forEach((ans, idx) => {
+                if (!gameState.revealedAnswers[idx]) {
+                    revealAnswer(idx);
+                }
+            });
+        }
+
+        /* ===================================================================
+           STRIKE SYSTEM & OVERLAY
+           =================================================================== */
+        function triggerStrike() {
+            gameState.strikes = Math.min(gameState.strikes + 1, 3);
+            playBuzzerSound();
+
+            showStrikeOverlay(gameState.strikes);
+            updateStrikeUI();
+        }
+
+        function resetStrikes() {
+            gameState.strikes = 0;
+            updateStrikeUI();
+        }
+
+        function showStrikeOverlay(count) {
+            const overlay = document.getElementById('overlay-strike');
+            const content = document.getElementById('strike-content');
+            
+            content.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                content.innerHTML += `<i class="fas fa-xmark text-7xl sm:text-9xl strike-anim"></i>`;
+            }
+
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 1200);
+        }
+
+        function updateStrikeUI() {
+            const container = document.getElementById('strike-indicators');
+            container.innerHTML = '';
+            for (let i = 0; i < gameState.strikes; i++) {
+                container.innerHTML += `<i class="fas fa-xmark"></i>`;
+            }
+        }
+
+        function resetStrikesUI() {
+            gameState.strikes = 0;
+            updateStrikeUI();
+        }
+
+        /* ===================================================================
+           TEAM & POT MANAGEMENT (4 TEAMS)
+           =================================================================== */
+        function setActiveTeam(teamNum) {
+            gameState.activeTeam = teamNum;
+            
+            for (let i = 1; i <= 4; i++) {
+                const badge = document.getElementById(`turn-badge-${i}`);
+                const card = document.getElementById(`card-team${i}`);
+                const btn = document.getElementById(`btn-turn-${i}`);
+                
+                const teamColor = gameState.teams[i-1].color;
+
+                if (i === teamNum) {
+                    badge.classList.remove('hidden');
+                    card.className = `bg-gradient-to-b from-${teamColor}-950 to-slate-900 border-2 border-${teamColor}-500 rounded-2xl p-2 text-center flex flex-col justify-between h-28 sm:h-36 transition-all neon-${teamColor}`;
+                    btn.className = `px-2.5 py-1 rounded-lg bg-${teamColor}-950 border border-${teamColor}-500 text-${teamColor}-300 text-xs font-bold`;
+                } else {
+                    badge.classList.add('hidden');
+                    card.className = `bg-gradient-to-b from-${teamColor}-950 to-slate-900 border-2 border-${teamColor}-500/50 rounded-2xl p-2 text-center flex flex-col justify-between h-28 sm:h-36 transition-all`;
+                    btn.className = `px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-xs font-bold`;
+                }
+            }
+        }
+
+        function addPotToTeam(teamNum) {
+            if (gameState.roundPot <= 0) return;
+
+            playScoreSound();
+
+            gameState.teams[teamNum - 1].score += gameState.roundPot;
+            document.getElementById(`score-team${teamNum}`).textContent = gameState.teams[teamNum - 1].score;
+
+            gameState.roundPot = 0;
+            document.getElementById('round-pot').textContent = "0";
+
+            // Automatically prompt teacher review
+            setTimeout(() => {
+                openEducativeModal();
+            }, 600);
+        }
+
+        function nextRound() {
+            if (gameState.currentRound + 1 < QUIZ_DATA.length) {
+                loadRound(gameState.currentRound + 1);
+            } else {
+                showWinnerScene();
+            }
+        }
+
+        /* ===================================================================
+           EDUCATIVE REVIEW MODAL
+           =================================================================== */
+        function openEducativeModal() {
+            const currentData = QUIZ_DATA[gameState.currentRound];
+            document.getElementById('modal-topic').textContent = `Topik: ${currentData.topic}`;
+            document.getElementById('modal-explanation').textContent = currentData.explanation;
+            document.getElementById('modal-educative').classList.remove('hidden');
+        }
+
+        function closeEducativeModal() {
+            document.getElementById('modal-educative').classList.add('hidden');
+        }
+
+        /* ===================================================================
+           WINNER ANNOUNCEMENT & CONFETTI (4 TEAMS PODIUM)
+           =================================================================== */
+        function showWinnerScene() {
+            document.getElementById('scene-game').classList.add('hidden');
+            document.getElementById('scene-winner').classList.remove('hidden');
+
+            playWinnerFanfare();
+
+            // Sort teams by score descending
+            const sortedTeams = [...gameState.teams].sort((a, b) => b.score - a.score);
+            const winner = sortedTeams[0];
+
+            document.getElementById('winner-title').textContent = `${winner.name.toUpperCase()} JUARA 1!`;
+
+            const gridContainer = document.getElementById('winner-teams-grid');
+            gridContainer.innerHTML = '';
+
+            sortedTeams.forEach((t, idx) => {
+                const isChampion = idx === 0;
+                const cardEl = document.createElement('div');
+                cardEl.className = `bg-slate-950 p-3 rounded-2xl border-2 ${isChampion ? 'border-yellow-400 bg-yellow-500/10' : 'border-slate-800'} flex flex-col justify-between`;
+                
+                cardEl.innerHTML = `
+                    <div class="text-[10px] font-black text-yellow-400 uppercase tracking-wider mb-1">
+                        ${isChampion ? '<i class="fas fa-crown text-yellow-300 mr-1"></i>JUARA 1' : `PERINGKAT ${idx + 1}`}
+                    </div>
+                    <div class="font-extrabold text-sm text-${t.color}-300 truncate">${t.name}</div>
+                    <div class="text-2xl font-black text-white font-fredoka mt-1">${t.score} Pts</div>
+                `;
+                gridContainer.appendChild(cardEl);
+            });
+
+            // Trigger confetti burst
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 90,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function restartGame() {
+            document.getElementById('scene-winner').classList.add('hidden');
+            document.getElementById('scene-setup').classList.remove('hidden');
+        }
+
+        /* ===================================================================
+           FULLSCREEN TOGGLE
+           =================================================================== */
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        /* ===================================================================
+           3D CANVAS ANIMATION FOR INTRO SCREEN (GOLD RINGS & PARTICLES)
+           =================================================================== */
+        (function initIntroCanvas() {
+            const canvas = document.getElementById('intro-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let width = (canvas.width = window.innerWidth);
+            let height = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const particles = [];
+            for (let i = 0; i < 70; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    r: Math.random() * 3 + 1,
+                    speedY: Math.random() * 0.8 + 0.2,
+                    alpha: Math.random() * 0.8 + 0.2
+                });
+            }
+
+            let angle = 0;
+
+            function animateIntro() {
+                ctx.clearRect(0, 0, width, height);
+
+                const grad = ctx.createRadialGradient(width/2, height/2, 10, width/2, height/2, width*0.7);
+                grad.addColorStop(0, '#1e1b4b');
+                grad.addColorStop(0.6, '#0f172a');
+                grad.addColorStop(1, '#020617');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.fillStyle = '#fde047';
+                particles.forEach(p => {
+                    ctx.globalAlpha = p.alpha;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    p.y -= p.speedY;
+                    if (p.y < 0) {
+                        p.y = height;
+                        p.x = Math.random() * width;
+                    }
+                });
+                ctx.globalAlpha = 1.0;
+
+                angle += 0.015;
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const radiusX = Math.min(width, height) * 0.35;
+                const radiusY = radiusX * 0.4;
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(0.2);
+
+                ctx.beginPath();
+                ctx.ellipse(0, 0, radiusX, radiusY, angle, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(234, 179, 8, 0.4)';
+                ctx.lineWidth = 12;
+                ctx.shadowColor = '#eab308';
+                ctx.shadowBlur = 25;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.ellipse(0, 0, radiusX * 0.85, radiusY * 0.85, -angle * 1.2, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+                ctx.lineWidth = 6;
+                ctx.shadowColor = '#38bdf8';
+                ctx.shadowBlur = 20;
+                ctx.stroke();
+
+                ctx.restore();
+
+                requestAnimationFrame(animateIntro);
+            }
+
+            animateIntro();
+        })();
+    </script>
+</body>
+</html>
